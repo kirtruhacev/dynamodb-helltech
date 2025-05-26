@@ -6,8 +6,10 @@ import static helltech.dynamodb.DatabaseConstants.PK2;
 import static helltech.dynamodb.DatabaseConstants.PK3;
 import static helltech.dynamodb.DatabaseConstants.SK2;
 import static helltech.dynamodb.DatabaseConstants.SK3;
+import static software.amazon.awssdk.enhanced.dynamodb.TableSchema.fromBean;
 import java.util.Objects;
 import java.util.UUID;
+import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbAttribute;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSecondaryPartitionKey;
@@ -32,6 +34,10 @@ public class Publication extends Dao {
 
     public static String type() {
         return PUBLICATION;
+    }
+
+    public static TableSchema<Publication> tableSchema() {
+        return fromBean(Publication.class);
     }
 
     public UUID getUserIdentifier() {

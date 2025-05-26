@@ -4,7 +4,6 @@ import static helltech.dynamodb.DatabaseConstants.GSI1;
 import static helltech.dynamodb.DatabaseConstants.GSI2;
 import static helltech.dynamodb.DatabaseConstants.GSI3;
 import static helltech.dynamodb.DatabaseConstants.TABLE_NAME;
-import static software.amazon.awssdk.enhanced.dynamodb.TableSchema.fromBean;
 import helltech.dynamodb.model.Dao;
 import helltech.dynamodb.model.Institution;
 import helltech.dynamodb.model.Publication;
@@ -15,25 +14,21 @@ import java.util.UUID;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
 import software.amazon.awssdk.enhanced.dynamodb.Key;
-import software.amazon.awssdk.enhanced.dynamodb.mapper.BeanTableSchema;
 import software.amazon.awssdk.enhanced.dynamodb.model.Page;
 import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 
 public class DynamoDBRepository implements Repository {
 
-    protected static final BeanTableSchema<Publication> PUBLICATION_TABLE_SCHEMA = fromBean(Publication.class);
-    protected static final BeanTableSchema<Institution> INSTITUTION_TABLE_SCHEMA = fromBean(Institution.class);
-    protected static final BeanTableSchema<User> USER_TABLE_SCHEMA = fromBean(User.class);
     private final DynamoDbTable<Publication> publicationTable;
     private final DynamoDbTable<User> userTable;
     private final DynamoDbTable<Institution> institutionTable;
 
     public DynamoDBRepository(DynamoDbClient client) {
         var enhancedClient = DynamoDbEnhancedClient.builder().dynamoDbClient(client).build();
-        this.publicationTable = enhancedClient.table(TABLE_NAME, PUBLICATION_TABLE_SCHEMA);
-        this.userTable = enhancedClient.table(TABLE_NAME, USER_TABLE_SCHEMA);
-        this.institutionTable = enhancedClient.table(TABLE_NAME, INSTITUTION_TABLE_SCHEMA);
+        this.publicationTable = enhancedClient.table(TABLE_NAME, Publication.tableSchema());
+        this.userTable = enhancedClient.table(TABLE_NAME, User.tableSchema());
+        this.institutionTable = enhancedClient.table(TABLE_NAME, Institution.tableSchema());
     }
 
     @Override
