@@ -3,7 +3,9 @@ package helltech.dynamodb.model;
 import static helltech.dynamodb.DatabaseConstants.GSI2;
 import static helltech.dynamodb.DatabaseConstants.PK2;
 import static helltech.dynamodb.DatabaseConstants.SK2;
+import static software.amazon.awssdk.enhanced.dynamodb.TableSchema.fromBean;
 import java.util.UUID;
+import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbAttribute;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSecondaryPartitionKey;
@@ -27,6 +29,10 @@ public class User extends Dao {
         return USER;
     }
 
+    public static TableSchema<User> tableSchema() {
+        return fromBean(User.class);
+    }
+
     public UUID getInstitutionIdentifier() {
         return institutionIdentifier;
     }
@@ -46,7 +52,7 @@ public class User extends Dao {
     }
 
     @DynamoDbSecondarySortKey(indexNames = {GSI2})
-    @DynamoDbAttribute(SK2  )
+    @DynamoDbAttribute(SK2)
     public String getSk2() {
         return KEY_PATTERN.formatted(User.type(), getIdentifier());
     }
