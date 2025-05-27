@@ -14,19 +14,19 @@ import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSecon
 @DynamoDbBean
 public class User extends Dao {
 
-    protected static final String USER = "User";
+    protected static final String TYPE = "User";
     private UUID institutionIdentifier;
 
     public User() {
     }
 
     public User(UUID identifier, UUID institutionIdentifier) {
-        super(identifier, USER);
+        super(identifier, TYPE);
         this.institutionIdentifier = institutionIdentifier;
     }
 
     public static String type() {
-        return USER;
+        return TYPE;
     }
 
     public static TableSchema<User> tableSchema() {

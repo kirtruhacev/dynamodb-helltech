@@ -8,17 +8,17 @@ import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
 @DynamoDbBean
 public class Institution extends Dao {
 
-    protected static final String INSTITUTION = "Institution";
+    protected static final String TYPE = "Institution";
 
     public Institution() {
     }
 
     public Institution(UUID identifier) {
-        super(identifier, INSTITUTION);
+        super(identifier, TYPE);
     }
 
     public static String type() {
-        return INSTITUTION;
+        return TYPE;
     }
 
     public static TableSchema<Institution> tableSchema() {
