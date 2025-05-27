@@ -15,18 +15,19 @@ import software.amazon.awssdk.services.dynamodb.model.DeleteTableRequest;
 
 class DynamoDBRepositoryTest {
 
+    private static final String MY_TABLE = DatabaseConstants.TABLE_NAME;
     private Repository repository;
     private DynamoDbClient client;
 
     @BeforeEach
     void setUp() {
-        client = dynamoDBLocal();
+        client = dynamoDBLocal(MY_TABLE);
         this.repository = new DynamoDBRepository(client);
     }
 
     @AfterEach
     void tearDown() {
-        client.deleteTable(DeleteTableRequest.builder().tableName("table").build());
+        client.deleteTable(DeleteTableRequest.builder().tableName(MY_TABLE).build());
     }
 
     @Test
