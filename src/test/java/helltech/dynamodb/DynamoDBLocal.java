@@ -30,6 +30,8 @@ import software.amazon.awssdk.services.dynamodb.model.ScalarAttributeType;
  */
 public class DynamoDBLocal {
 
+    private static final String NULL_SORT_KEY = null;
+
     /**
      * A convenience method to create an instance of DynamoDBEmbedded with
      * a pre-configured table with some defaults for testing purposes and returns a client.
@@ -51,7 +53,7 @@ public class DynamoDBLocal {
                                .attributeDefinitions(createAttribute(PK0), createAttribute(SK0),
                                                      createAttribute(PK1), createAttribute(PK2), createAttribute(SK2),
                                                      createAttribute(PK3), createAttribute(SK3))
-                               .globalSecondaryIndexes(createGlobalSecondaryIndex(GSI1, PK1, null),
+                               .globalSecondaryIndexes(createGlobalSecondaryIndex(GSI1, PK1, NULL_SORT_KEY),
                                                        createGlobalSecondaryIndex(GSI2, PK2, SK2),
                                                        createGlobalSecondaryIndex(GSI3, PK3, SK3))
                                .keySchema(createKeySchemaElements(PK0, SK0))
