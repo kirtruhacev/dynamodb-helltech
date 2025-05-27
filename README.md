@@ -27,3 +27,12 @@ This project demonstrates how to manage multiple entity types (`User`, `Publicat
 1. **Clone the Repository**:
    ```bash
    git clone https://github.com/helltech/dynamodb-helltech.git
+   ```
+2. **Build with Gradle**:
+   ```bash
+   ./gradlew build
+   ```
+   or
+   ```powershell
+   gradlew.bat build
+   ```
