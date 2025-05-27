@@ -88,9 +88,9 @@ public class DynamoDBRepository implements Repository {
     }
 
     @Override
-    public List<Publication> listPublicationsByUserIdentifier(UUID identifier) {
+    public List<Publication> listPublicationsByUser(User user) {
         return publicationTable.index(GSI2)
-                   .query(query(Dao.partitionKey(User.type(), identifier)))
+                   .query(query(Dao.partitionKey(User.type(), user.getIdentifier())))
                    .stream()
                    .map(Page::items)
                    .flatMap(List::stream)
@@ -98,9 +98,9 @@ public class DynamoDBRepository implements Repository {
     }
 
     @Override
-    public List<Publication> listPublicationsByInstitutionIdentifier(UUID identifier) {
+    public List<Publication> listPublicationsByInstitution(Institution institution) {
         return publicationTable.index(GSI3)
-                   .query(query(Dao.partitionKey(Institution.type(), identifier)))
+                   .query(query(Dao.partitionKey(Institution.type(), institution.getIdentifier())))
                    .stream()
                    .map(Page::items)
                    .flatMap(List::stream)
@@ -108,9 +108,9 @@ public class DynamoDBRepository implements Repository {
     }
 
     @Override
-    public List<User> listAllUsersByInstitutionIdentifier(UUID identifier) {
+    public List<User> listAllUsersByInstitution(Institution institution) {
         return userTable.index(GSI2)
-                   .query(query(Dao.partitionKey(Institution.type(), identifier)))
+                   .query(query(Dao.partitionKey(Institution.type(), institution.getIdentifier())))
                    .stream()
                    .map(Page::items)
                    .flatMap(List::stream)

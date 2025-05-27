@@ -7,6 +7,7 @@ import static helltech.dynamodb.DatabaseConstants.PK3;
 import static helltech.dynamodb.DatabaseConstants.SK2;
 import static helltech.dynamodb.DatabaseConstants.SK3;
 import static software.amazon.awssdk.enhanced.dynamodb.TableSchema.fromBean;
+import helltech.dynamodb.Generated;
 import java.util.Objects;
 import java.util.UUID;
 import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
@@ -18,7 +19,7 @@ import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSecon
 @DynamoDbBean
 public class Publication extends Dao {
 
-    protected static final String PUBLICATION = "Publication";
+    protected static final String TYPE = "Publication";
     private UUID institutionIdentifier;
     private UUID userIdentifier;
 
@@ -26,14 +27,14 @@ public class Publication extends Dao {
 
     }
 
-    public Publication(UUID identifier, UUID userIdentifier, UUID institutionIdentifier) {
-        super(identifier, PUBLICATION);
-        this.userIdentifier = userIdentifier;
-        this.institutionIdentifier = institutionIdentifier;
+    public Publication(UUID identifier, User user, Institution institution) {
+        super(identifier, TYPE);
+        this.userIdentifier = user.getIdentifier();
+        this.institutionIdentifier = institution.getIdentifier();
     }
 
     public static String type() {
-        return PUBLICATION;
+        return TYPE;
     }
 
     public static TableSchema<Publication> tableSchema() {
@@ -96,11 +97,13 @@ public class Publication extends Dao {
         this.institutionIdentifier = institutionIdentifier;
     }
 
+    @Generated
     @Override
     public int hashCode() {
         return Objects.hash(super.hashCode(), getInstitutionIdentifier(), getUserIdentifier());
     }
 
+    @Generated
     @Override
     public boolean equals(Object o) {
         if (!(o instanceof Publication that)) {

@@ -3,10 +3,15 @@ package helltech.dynamodb;
 import static helltech.dynamodb.DynamoDBLocal.dynamoDBLocal;
 import static java.util.UUID.randomUUID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import com.amazonaws.services.dynamodbv2.local.embedded.DynamoDBEmbedded;
+import com.amazonaws.services.dynamodbv2.local.shared.access.AmazonDynamoDBLocal;
+import helltech.dynamodb.model.Dao;
 import helltech.dynamodb.model.Institution;
 import helltech.dynamodb.model.Publication;
 import helltech.dynamodb.model.User;
-import java.util.UUID;
+import java.util.function.Supplier;
+import java.util.stream.IntStream;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,13 +21,14 @@ import software.amazon.awssdk.services.dynamodb.model.DeleteTableRequest;
 class DynamoDBRepositoryTest {
 
     private static final String MY_TABLE = DatabaseConstants.TABLE_NAME;
-    private Repository repository;
+    public static final AmazonDynamoDBLocal database = DynamoDBEmbedded.create();
     private DynamoDbClient client;
+    private Repository repository;
 
     @BeforeEach
     void setUp() {
-        client = dynamoDBLocal(MY_TABLE);
-        this.repository = new DynamoDBRepository(client);
+        client = dynamoDBLocal(database, MY_TABLE);
+        repository = new DynamoDBRepository(client);
     }
 
     @AfterEach
@@ -32,109 +38,142 @@ class DynamoDBRepositoryTest {
 
     @Test
     void shouldFetchUserByIdentifier() {
-        var user = randomUser(randomUUID());
-        repository.save(user);
-
+        var user = createUser();
         var persistedUser = repository.fetchUserByIdentifier(user.getIdentifier()).orElseThrow();
-
         assertEquals(user, persistedUser);
     }
 
     @Test
     void shouldFetchInstitutionByIdentifier() {
-        var institution = new Institution(randomUUID());
-        repository.save(institution);
-
+        var institution = createInstitution();
         var persistedInstitution = repository.fetchInstitutionByIdentifier(institution.getIdentifier()).orElseThrow();
-
         assertEquals(institution, persistedInstitution);
     }
 
     @Test
     void shouldFetchPublicationByIdentifier() {
-        var publication = new Publication(randomUUID(), randomUUID(), randomUUID());
-        repository.save(publication);
-
+        var publication = createPublication();
         var persistedPublication = repository.fetchPublicationByIdentifier(publication.getIdentifier()).orElseThrow();
-
         assertEquals(publication, persistedPublication);
     }
 
     @Test
     void shouldListAllUsers() {
-        repository.save(randomUser(randomUUID()));
-        repository.save(randomUser(randomUUID()));
-
+        var numberOfUsers = 2;
+        daoCreator(numberOfUsers, () -> createUser(createInstitution()));
         var users = repository.listAllUsers();
-
-        assertEquals(2, users.size());
+        assertEquals(numberOfUsers, users.size());
     }
 
     @Test
     void shouldListAllInstitutions() {
-        repository.save(randomInstitution());
-        repository.save(randomInstitution());
-
+        var numberOfInstitutions = 2;
+        daoCreator(numberOfInstitutions, this::createInstitution);
         var institutions = repository.listAllInstitutions();
-
-        assertEquals(2, institutions.size());
+        assertEquals(numberOfInstitutions, institutions.size());
     }
 
     @Test
     void shouldListAllPublications() {
-        repository.save(randomPublication(randomUUID(), randomUUID()));
-        repository.save(randomPublication(randomUUID(), randomUUID()));
-
+        var numberOfPublications = 2;
+        var institution = createInstitution();
+        daoCreator(numberOfPublications, () -> createPublication(createUser(institution), institution));
         var publications = repository.listAllPublications();
-
-        assertEquals(2, publications.size());
+        assertEquals(numberOfPublications, publications.size());
     }
 
     @Test
     void shouldListAllPublicationsByUserIdentifier() {
-        var user = randomUser(randomUUID());
-        repository.save(user);
-        repository.save(randomPublication(user.getIdentifier(), randomUUID()));
-        repository.save(randomPublication(user.getIdentifier(), randomUUID()));
-
-        var publications = repository.listPublicationsByUserIdentifier(user.getIdentifier());
-
-        assertEquals(2, publications.size());
+        var numberOfPublications = 2;
+        var user = createUserWithPublications(numberOfPublications);
+        var fetchUser = repository.fetchUserByIdentifier(user.getIdentifier()).orElseThrow();
+        var publications = repository.listPublicationsByUser(fetchUser);
+        assertEquals(numberOfPublications, publications.size());
     }
 
     @Test
     void shouldListAllPublicationsByInstitutionIdentifier() {
-        var institution = randomInstitution();
-        repository.save(institution);
-        repository.save(randomPublication(randomUUID(), institution.getIdentifier()));
-        repository.save(randomPublication(randomUUID(), institution.getIdentifier()));
-
-        var publications = repository.listPublicationsByInstitutionIdentifier(institution.getIdentifier());
-
-        assertEquals(2, publications.size());
+        var numberOfPublications = 2;
+        var institution = createInstitutionWithPublications(numberOfPublications);
+        var publications = repository.listPublicationsByInstitution(institution);
+        assertEquals(numberOfPublications, publications.size());
     }
 
     @Test
-    void shouldListAllUsersByInstitutionIdentifier() {
-        var institution = randomInstitution();
-
-        repository.save(randomUser(institution.getIdentifier()));
-        repository.save(randomUser(institution.getIdentifier()));
-
-        var publications = repository.listAllUsersByInstitutionIdentifier(institution.getIdentifier());
-
-        assertEquals(2, publications.size());
+    void shouldListAllUsersByInstitution() {
+        var numberOfUsers = 2;
+        var institution = createInstitutionWithUsers(numberOfUsers);
+        var publications = repository.listAllUsersByInstitution(institution);
+        assertEquals(numberOfUsers, publications.size());
     }
 
-    private Publication randomPublication(UUID userIdentifier, UUID institutionIdentifier) {
-        return new Publication(randomUUID(), userIdentifier, institutionIdentifier);
+    @Test
+    void shouldThrowIllegalStateExceptionWhenUnknownDaoIsEncountered() {
+        var nonsense = new Nonsense();
+        assertThrows(IllegalStateException.class, () -> repository.save(nonsense));
+    }
+
+    private Publication createPublication(User user, Institution institution) {
+        var publication = new Publication(randomUUID(),
+                                          user,
+                                          institution);
+        repository.save(publication);
+        return publication;
+    }
+
+    private Publication createPublication() {
+        var institution = createInstitution();
+        return createPublication(createUser(institution), institution);
+    }
+
+    private Institution createInstitutionWithUsers(int numberOfUsers) {
+        var institution = createInstitution();
+        daoCreator(numberOfUsers, () -> createUser(institution));
+        return institution;
+    }
+
+    private User createUserWithPublications(int publications) {
+        var user = createUser();
+        daoCreator(publications, () -> createPublication(user, randomInstitution()));
+        return user;
+    }
+
+    private Institution createInstitutionWithPublications(int publications) {
+        var institution = createInstitution();
+        daoCreator(publications, () -> createPublication(createUser(institution), institution));
+        return institution;
+    }
+
+    private Institution createInstitution() {
+        var institution = new Institution(randomUUID());
+        repository.save(institution);
+        return institution;
+    }
+
+    private User createUser() {
+        return createUser(createInstitution());
+    }
+
+    private User createUser(Institution institution) {
+        var user = randomUser(institution);
+        repository.save(user);
+        return user;
     }
 
     private Institution randomInstitution() {
         return new Institution(randomUUID());
     }
 
-    private static User randomUser(UUID institutionIdentifier) {
-        return new User(randomUUID(), institutionIdentifier);
+    private static User randomUser(Institution institution) {
+        return new User(randomUUID(), institution.getIdentifier());
+    }
+
+    private void daoCreator(int num, Supplier<Dao> supplier) {
+        IntStream.range(0, num)
+            .forEach(ignored -> supplier.get());
+    }
+
+    private static class Nonsense extends Dao {
+
     }
 }
