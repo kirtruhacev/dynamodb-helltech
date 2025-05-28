@@ -11,7 +11,7 @@ import static helltech.dynamodb.DatabaseConstants.SK0;
 import static helltech.dynamodb.DatabaseConstants.SK2;
 import static helltech.dynamodb.DatabaseConstants.SK3;
 import static java.util.Objects.isNull;
-import com.amazonaws.services.dynamodbv2.local.embedded.DynamoDBEmbedded;
+import com.amazonaws.services.dynamodbv2.local.shared.access.AmazonDynamoDBLocal;
 import java.util.ArrayList;
 import java.util.Optional;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
@@ -36,11 +36,11 @@ public class DynamoDBLocal {
      * A convenience method to create an instance of DynamoDBEmbedded with
      * a pre-configured table with some defaults for testing purposes and returns a client.
      *
+     * @param database an instantiated DynamoDbLocal
      * @param tableName the name of the table to create.
      * @return A DynamoDBClient instance.
      */
-    public static DynamoDbClient dynamoDBLocal(String tableName) {
-        var database = DynamoDBEmbedded.create();
+    public static DynamoDbClient dynamoDBLocal(AmazonDynamoDBLocal database, String tableName) {
         var client = database.dynamoDbClient();
         createTable(tableName, client);
         return client;

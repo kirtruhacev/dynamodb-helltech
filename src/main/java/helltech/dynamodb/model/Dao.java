@@ -4,6 +4,7 @@ import static helltech.dynamodb.DatabaseConstants.GSI1;
 import static helltech.dynamodb.DatabaseConstants.PK1;
 import static helltech.dynamodb.DatabaseConstants.SK0;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import helltech.dynamodb.annotations.Generated;
 import java.io.Serializable;
 import java.util.Objects;
 import java.util.UUID;
@@ -77,11 +78,13 @@ public class Dao implements Serializable {
 
     }
 
+    @Generated
     @Override
     public int hashCode() {
         return Objects.hash(getType(), getIdentifier());
     }
 
+    @Generated
     @Override
     public boolean equals(Object o) {
         if (!(o instanceof Dao dao)) {
