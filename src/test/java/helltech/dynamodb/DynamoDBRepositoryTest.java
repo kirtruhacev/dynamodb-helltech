@@ -76,8 +76,7 @@ class DynamoDBRepositoryTest {
     @Test
     void shouldListAllPublications() {
         var numberOfPublications = 2;
-        var institution = createInstitution();
-        daoCreator(numberOfPublications, () -> createPublication(createUser(institution), institution));
+        daoCreator(numberOfPublications, this::createPublicationWithUniqueUserAtUniqueOrganisation);
         var publications = repository.listAllPublications();
         assertEquals(numberOfPublications, publications.size());
     }
@@ -111,6 +110,11 @@ class DynamoDBRepositoryTest {
     void shouldThrowIllegalStateExceptionWhenUnknownDaoIsEncountered() {
         var nonsense = new Nonsense();
         assertThrows(IllegalStateException.class, () -> repository.save(nonsense));
+    }
+
+    private Dao createPublicationWithUniqueUserAtUniqueOrganisation() {
+        var institution = createInstitution();
+        return createPublication(createUser(institution), institution);
     }
 
     private Publication createPublication(User user, Institution institution) {
