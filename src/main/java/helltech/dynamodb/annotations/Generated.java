@@ -1,4 +1,4 @@
-package helltech.dynamodb;
+package helltech.dynamodb.annotations;
 
 import static java.lang.annotation.ElementType.CONSTRUCTOR;
 import static java.lang.annotation.ElementType.METHOD;
