@@ -4,7 +4,7 @@ import static helltech.dynamodb.DatabaseConstants.GSI1;
 import static helltech.dynamodb.DatabaseConstants.PK1;
 import static helltech.dynamodb.DatabaseConstants.SK0;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import helltech.dynamodb.Generated;
+import helltech.dynamodb.annotations.Generated;
 import java.io.Serializable;
 import java.util.Objects;
 import java.util.UUID;

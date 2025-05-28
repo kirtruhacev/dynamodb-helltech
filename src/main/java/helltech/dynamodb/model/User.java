@@ -4,7 +4,7 @@ import static helltech.dynamodb.DatabaseConstants.GSI2;
 import static helltech.dynamodb.DatabaseConstants.PK2;
 import static helltech.dynamodb.DatabaseConstants.SK2;
 import static software.amazon.awssdk.enhanced.dynamodb.TableSchema.fromBean;
-import helltech.dynamodb.Generated;
+import helltech.dynamodb.annotations.Generated;
 import java.util.Objects;
 import java.util.UUID;
 import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
