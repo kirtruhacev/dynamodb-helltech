@@ -102,8 +102,8 @@ class DynamoDBRepositoryTest {
     void shouldListAllUsersByInstitution() {
         var numberOfUsers = 2;
         var institution = createInstitutionWithUsers(numberOfUsers);
-        var publications = repository.listAllUsersByInstitution(institution);
-        assertEquals(numberOfUsers, publications.size());
+        var users = repository.listAllUsersByInstitution(institution);
+        assertEquals(numberOfUsers, users.size());
     }
 
     @Test
