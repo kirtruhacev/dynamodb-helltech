@@ -1,10 +1,12 @@
-package helltech.dynamodb.model;
+package helltech.dynamodb.model.dao;
 
 import static helltech.dynamodb.DatabaseConstants.GSI2;
 import static helltech.dynamodb.DatabaseConstants.PK2;
 import static helltech.dynamodb.DatabaseConstants.SK2;
 import static software.amazon.awssdk.enhanced.dynamodb.TableSchema.fromBean;
 import helltech.dynamodb.annotations.Generated;
+import helltech.dynamodb.model.business.Institution;
+import helltech.dynamodb.model.business.User;
 import java.util.Objects;
 import java.util.UUID;
 import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
@@ -14,15 +16,15 @@ import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSecon
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSecondarySortKey;
 
 @DynamoDbBean
-public class User extends Dao {
+public class UserDao extends Dao {
 
     protected static final String TYPE = "User";
     private UUID institutionIdentifier;
 
-    public User() {
+    public UserDao() {
     }
 
-    public User(UUID identifier, UUID institutionIdentifier) {
+    public UserDao(UUID identifier, UUID institutionIdentifier) {
         super(identifier, TYPE);
         this.institutionIdentifier = institutionIdentifier;
     }
@@ -31,8 +33,12 @@ public class User extends Dao {
         return TYPE;
     }
 
-    public static TableSchema<User> tableSchema() {
-        return fromBean(User.class);
+    public static TableSchema<UserDao> tableSchema() {
+        return fromBean(UserDao.class);
+    }
+
+    public static UserDao fromUser(User user) {
+        return new UserDao(user.identifier(), user.institution().identifier());
     }
 
     public UUID getInstitutionIdentifier() {
@@ -46,7 +52,7 @@ public class User extends Dao {
     @DynamoDbSecondaryPartitionKey(indexNames = {GSI2})
     @DynamoDbAttribute(PK2)
     public String getPk2() {
-        return KEY_PATTERN.formatted(Institution.type(), this.institutionIdentifier);
+        return KEY_PATTERN.formatted(InstitutionDao.type(), this.institutionIdentifier);
     }
 
     public void setPk2(String pk2) {
@@ -56,7 +62,7 @@ public class User extends Dao {
     @DynamoDbSecondarySortKey(indexNames = {GSI2})
     @DynamoDbAttribute(SK2)
     public String getSk2() {
-        return KEY_PATTERN.formatted(User.type(), getIdentifier());
+        return KEY_PATTERN.formatted(UserDao.type(), getIdentifier());
     }
 
     public void setSk2(String sk2) {
@@ -65,11 +71,17 @@ public class User extends Dao {
 
     @Override
     @Generated
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), getInstitutionIdentifier());
+    }
+
+    @Override
+    @Generated
     public boolean equals(Object o) {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof User user)) {
+        if (!(o instanceof UserDao user)) {
             return false;
         }
         if (!super.equals(o)) {
@@ -78,9 +90,7 @@ public class User extends Dao {
         return Objects.equals(getInstitutionIdentifier(), user.getInstitutionIdentifier());
     }
 
-    @Override
-    @Generated
-    public int hashCode() {
-        return Objects.hash(super.hashCode(), getInstitutionIdentifier());
+    public User toUser() {
+        return new User(this.getIdentifier(), new Institution(this.getInstitutionIdentifier()));
     }
 }

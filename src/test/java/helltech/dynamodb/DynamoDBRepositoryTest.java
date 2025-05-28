@@ -3,13 +3,12 @@ package helltech.dynamodb;
 import static helltech.dynamodb.DynamoDBLocal.dynamoDBLocal;
 import static java.util.UUID.randomUUID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import com.amazonaws.services.dynamodbv2.local.embedded.DynamoDBEmbedded;
 import com.amazonaws.services.dynamodbv2.local.shared.access.AmazonDynamoDBLocal;
-import helltech.dynamodb.model.Dao;
-import helltech.dynamodb.model.Institution;
-import helltech.dynamodb.model.Publication;
-import helltech.dynamodb.model.User;
+import helltech.dynamodb.model.business.Entity;
+import helltech.dynamodb.model.business.Institution;
+import helltech.dynamodb.model.business.Publication;
+import helltech.dynamodb.model.business.User;
 import java.util.function.Supplier;
 import java.util.stream.IntStream;
 import org.junit.jupiter.api.AfterEach;
@@ -39,21 +38,21 @@ class DynamoDBRepositoryTest {
     @Test
     void shouldFetchUserByIdentifier() {
         var user = createUser();
-        var persistedUser = repository.fetchUserByIdentifier(user.getIdentifier()).orElseThrow();
+        var persistedUser = repository.fetchUserByIdentifier(user.identifier()).orElseThrow();
         assertEquals(user, persistedUser);
     }
 
     @Test
     void shouldFetchInstitutionByIdentifier() {
         var institution = createInstitution();
-        var persistedInstitution = repository.fetchInstitutionByIdentifier(institution.getIdentifier()).orElseThrow();
+        var persistedInstitution = repository.fetchInstitutionByIdentifier(institution.identifier()).orElseThrow();
         assertEquals(institution, persistedInstitution);
     }
 
     @Test
     void shouldFetchPublicationByIdentifier() {
         var publication = createPublication();
-        var persistedPublication = repository.fetchPublicationByIdentifier(publication.getIdentifier()).orElseThrow();
+        var persistedPublication = repository.fetchPublicationByIdentifier(publication.identifier()).orElseThrow();
         assertEquals(publication, persistedPublication);
     }
 
@@ -85,7 +84,7 @@ class DynamoDBRepositoryTest {
     void shouldListAllPublicationsByUserIdentifier() {
         var numberOfPublications = 2;
         var user = createUserWithPublications(numberOfPublications);
-        var fetchUser = repository.fetchUserByIdentifier(user.getIdentifier()).orElseThrow();
+        var fetchUser = repository.fetchUserByIdentifier(user.identifier()).orElseThrow();
         var publications = repository.listPublicationsByUser(fetchUser);
         assertEquals(numberOfPublications, publications.size());
     }
@@ -106,21 +105,13 @@ class DynamoDBRepositoryTest {
         assertEquals(numberOfUsers, users.size());
     }
 
-    @Test
-    void shouldThrowIllegalStateExceptionWhenUnknownDaoIsEncountered() {
-        var nonsense = new Nonsense();
-        assertThrows(IllegalStateException.class, () -> repository.save(nonsense));
-    }
-
-    private Dao createPublicationWithUniqueUserAtUniqueOrganisation() {
+    private Entity createPublicationWithUniqueUserAtUniqueOrganisation() {
         var institution = createInstitution();
         return createPublication(createUser(institution), institution);
     }
 
     private Publication createPublication(User user, Institution institution) {
-        var publication = new Publication(randomUUID(),
-                                          user,
-                                          institution);
+        var publication = new Publication(randomUUID(), user, institution);
         repository.save(publication);
         return publication;
     }
@@ -169,15 +160,11 @@ class DynamoDBRepositoryTest {
     }
 
     private static User randomUser(Institution institution) {
-        return new User(randomUUID(), institution.getIdentifier());
+        return new User(randomUUID(), institution);
     }
 
-    private void daoCreator(int num, Supplier<Dao> supplier) {
+    private void daoCreator(int num, Supplier<Entity> supplier) {
         IntStream.range(0, num)
             .forEach(ignored -> supplier.get());
-    }
-
-    private static class Nonsense extends Dao {
-
     }
 }

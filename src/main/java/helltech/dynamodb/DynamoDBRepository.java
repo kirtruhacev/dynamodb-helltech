@@ -4,10 +4,14 @@ import static helltech.dynamodb.DatabaseConstants.GSI1;
 import static helltech.dynamodb.DatabaseConstants.GSI2;
 import static helltech.dynamodb.DatabaseConstants.GSI3;
 import static helltech.dynamodb.DatabaseConstants.TABLE_NAME;
-import helltech.dynamodb.model.Dao;
-import helltech.dynamodb.model.Institution;
-import helltech.dynamodb.model.Publication;
-import helltech.dynamodb.model.User;
+import helltech.dynamodb.model.business.Entity;
+import helltech.dynamodb.model.business.Institution;
+import helltech.dynamodb.model.business.Publication;
+import helltech.dynamodb.model.business.User;
+import helltech.dynamodb.model.dao.Dao;
+import helltech.dynamodb.model.dao.InstitutionDao;
+import helltech.dynamodb.model.dao.PublicationDao;
+import helltech.dynamodb.model.dao.UserDao;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -20,100 +24,109 @@ import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 
 public class DynamoDBRepository implements Repository {
 
-    private final DynamoDbTable<Publication> publicationTable;
-    private final DynamoDbTable<User> userTable;
-    private final DynamoDbTable<Institution> institutionTable;
+    private final DynamoDbTable<PublicationDao> publicationTable;
+    private final DynamoDbTable<UserDao> userTable;
+    private final DynamoDbTable<InstitutionDao> institutionTable;
 
     public DynamoDBRepository(DynamoDbClient client) {
         var enhancedClient = DynamoDbEnhancedClient.builder().dynamoDbClient(client).build();
-        this.publicationTable = enhancedClient.table(TABLE_NAME, Publication.tableSchema());
-        this.userTable = enhancedClient.table(TABLE_NAME, User.tableSchema());
-        this.institutionTable = enhancedClient.table(TABLE_NAME, Institution.tableSchema());
+        this.publicationTable = enhancedClient.table(TABLE_NAME, PublicationDao.tableSchema());
+        this.userTable = enhancedClient.table(TABLE_NAME, UserDao.tableSchema());
+        this.institutionTable = enhancedClient.table(TABLE_NAME, InstitutionDao.tableSchema());
     }
 
     @Override
-    public void save(Dao dao) {
-        switch (dao) {
-            case Publication publication -> publicationTable.putItem(publication);
-            case Institution institution -> institutionTable.putItem(institution);
-            case User user -> userTable.putItem(user);
+    public void save(Entity entity) {
+        switch (entity) {
+            case Publication publication -> publicationTable.putItem(PublicationDao.fromPublication(publication));
+            case Institution institution -> institutionTable.putItem(InstitutionDao.fromInstitution(institution));
+            case User user -> userTable.putItem(UserDao.fromUser(user));
             default -> throw new IllegalStateException();
         }
     }
 
     @Override
     public Optional<User> fetchUserByIdentifier(UUID identifier) {
-        var partitionValue = Dao.partitionKey(User.type(), identifier);
-        var sortValue = Dao.sortKey(User.type(), identifier);
-        return Optional.ofNullable(userTable.getItem(key(partitionValue, sortValue)));
+        var partitionValue = Dao.partitionKey(UserDao.type(), identifier);
+        var sortValue = Dao.sortKey(UserDao.type(), identifier);
+        return Optional.ofNullable(userTable.getItem(key(partitionValue, sortValue)))
+                   .map(UserDao::toUser);
     }
 
     @Override
     public Optional<Institution> fetchInstitutionByIdentifier(UUID identifier) {
-        var partitionValue = Dao.partitionKey(Institution.type(), identifier);
-        var sortValue = Dao.sortKey(Institution.type(), identifier);
-        return Optional.ofNullable(institutionTable.getItem(key(partitionValue, sortValue)));
+        var partitionValue = Dao.partitionKey(InstitutionDao.type(), identifier);
+        var sortValue = Dao.sortKey(InstitutionDao.type(), identifier);
+        return Optional.ofNullable(institutionTable.getItem(key(partitionValue, sortValue)))
+                   .map(InstitutionDao::toInstitution);
     }
 
     @Override
     public Optional<Publication> fetchPublicationByIdentifier(UUID identifier) {
-        var partitionValue = Dao.partitionKey(Publication.type(), identifier);
-        var sortValue = Dao.sortKey(Publication.type(), identifier);
-        return Optional.ofNullable(publicationTable.getItem(key(partitionValue, sortValue)));
+        var partitionValue = Dao.partitionKey(PublicationDao.type(), identifier);
+        var sortValue = Dao.sortKey(PublicationDao.type(), identifier);
+        return Optional.ofNullable(publicationTable.getItem(key(partitionValue, sortValue)))
+                   .map(PublicationDao::toPublication);
     }
 
     @Override
     public List<User> listAllUsers() {
-        return userTable.index(GSI1).query(query(User.type())).stream().map(Page::items).flatMap(List::stream).toList();
+        return userTable.index(GSI1).query(query(UserDao.type())).stream().map(Page::items).flatMap(List::stream).map(UserDao::toUser)
+                   .toList();
     }
 
     @Override
     public List<Institution> listAllInstitutions() {
         return institutionTable.index(GSI1)
-                   .query(query(Institution.type()))
+                   .query(query(InstitutionDao.type()))
                    .stream()
                    .map(Page::items)
                    .flatMap(List::stream)
+                   .map(InstitutionDao::toInstitution)
                    .toList();
     }
 
     @Override
     public List<Publication> listAllPublications() {
         return publicationTable.index(GSI1)
-                   .query(query(Publication.type()))
+                   .query(query(PublicationDao.type()))
                    .stream()
                    .map(Page::items)
                    .flatMap(List::stream)
+                   .map(PublicationDao::toPublication)
                    .toList();
     }
 
     @Override
     public List<Publication> listPublicationsByUser(User user) {
         return publicationTable.index(GSI2)
-                   .query(query(Dao.partitionKey(User.type(), user.getIdentifier())))
+                   .query(query(Dao.partitionKey(UserDao.type(), user.identifier())))
                    .stream()
                    .map(Page::items)
                    .flatMap(List::stream)
+                   .map(PublicationDao::toPublication)
                    .toList();
     }
 
     @Override
     public List<Publication> listPublicationsByInstitution(Institution institution) {
         return publicationTable.index(GSI3)
-                   .query(query(Dao.partitionKey(Institution.type(), institution.getIdentifier())))
+                   .query(query(Dao.partitionKey(InstitutionDao.type(), institution.identifier())))
                    .stream()
                    .map(Page::items)
                    .flatMap(List::stream)
+                   .map(PublicationDao::toPublication)
                    .toList();
     }
 
     @Override
     public List<User> listAllUsersByInstitution(Institution institution) {
         return userTable.index(GSI2)
-                   .query(query(Dao.partitionKey(Institution.type(), institution.getIdentifier())))
+                   .query(query(Dao.partitionKey(InstitutionDao.type(), institution.identifier())))
                    .stream()
                    .map(Page::items)
                    .flatMap(List::stream)
+                   .map(UserDao::toUser)
                    .toList();
     }
 

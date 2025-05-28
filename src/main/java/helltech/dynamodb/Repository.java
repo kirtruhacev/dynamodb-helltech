@@ -1,9 +1,13 @@
 package helltech.dynamodb;
 
-import helltech.dynamodb.model.Dao;
-import helltech.dynamodb.model.Institution;
-import helltech.dynamodb.model.Publication;
-import helltech.dynamodb.model.User;
+import helltech.dynamodb.model.business.Entity;
+import helltech.dynamodb.model.business.Institution;
+import helltech.dynamodb.model.business.Publication;
+import helltech.dynamodb.model.business.User;
+import helltech.dynamodb.model.dao.Dao;
+import helltech.dynamodb.model.dao.InstitutionDao;
+import helltech.dynamodb.model.dao.PublicationDao;
+import helltech.dynamodb.model.dao.UserDao;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -16,9 +20,9 @@ public interface Repository {
 
     /**
      * Persist the data in the given DAO.
-     * @param dao The data to write.
+     * @param entity The data to write.
      */
-    void save(Dao dao);
+    void save(Entity entity);
 
     /**
      * Fetch data for a User by identifier; the data may be empty if the identifier is not

@@ -1,4 +1,4 @@
-package helltech.dynamodb.model;
+package helltech.dynamodb.model.dao;
 
 import static helltech.dynamodb.DatabaseConstants.GSI1;
 import static helltech.dynamodb.DatabaseConstants.PK1;
