@@ -51,7 +51,7 @@ class DynamoDBRepositoryTest {
 
     @Test
     void shouldFetchPublicationByIdentifier() {
-        var publication = createPublication();
+        var publication = createPublicationWithUniqueUserAtUniqueOrganisation();
         var persistedPublication = repository.fetchPublicationByIdentifier(publication.identifier()).orElseThrow();
         assertEquals(publication, persistedPublication);
     }
@@ -114,11 +114,6 @@ class DynamoDBRepositoryTest {
         var publication = new Publication(randomUUID(), user, institution);
         repository.save(publication);
         return publication;
-    }
-
-    private Publication createPublication() {
-        var institution = createInstitution();
-        return createPublication(createUser(institution), institution);
     }
 
     private Institution createInstitutionWithUsers(int numberOfUsers) {
