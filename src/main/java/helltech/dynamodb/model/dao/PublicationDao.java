@@ -1,4 +1,4 @@
-package helltech.dynamodb.model;
+package helltech.dynamodb.model.dao;
 
 import static helltech.dynamodb.DatabaseConstants.GSI2;
 import static helltech.dynamodb.DatabaseConstants.GSI3;
@@ -8,6 +8,9 @@ import static helltech.dynamodb.DatabaseConstants.SK2;
 import static helltech.dynamodb.DatabaseConstants.SK3;
 import static software.amazon.awssdk.enhanced.dynamodb.TableSchema.fromBean;
 import helltech.dynamodb.annotations.Generated;
+import helltech.dynamodb.model.business.Institution;
+import helltech.dynamodb.model.business.Publication;
+import helltech.dynamodb.model.business.User;
 import java.util.Objects;
 import java.util.UUID;
 import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
@@ -17,28 +20,38 @@ import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSecon
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSecondarySortKey;
 
 @DynamoDbBean
-public class Publication extends Dao {
+public class PublicationDao extends Dao {
 
     protected static final String TYPE = "Publication";
     private UUID institutionIdentifier;
     private UUID userIdentifier;
 
-    public Publication() {
+    public PublicationDao() {
 
     }
 
-    public Publication(UUID identifier, User user, Institution institution) {
+    public PublicationDao(UUID identifier, User user, Institution institution) {
         super(identifier, TYPE);
-        this.userIdentifier = user.getIdentifier();
-        this.institutionIdentifier = institution.getIdentifier();
+        this.userIdentifier = user.identifier();
+        this.institutionIdentifier = institution.identifier();
     }
 
     public static String type() {
         return TYPE;
     }
 
-    public static TableSchema<Publication> tableSchema() {
-        return fromBean(Publication.class);
+    public static TableSchema<PublicationDao> tableSchema() {
+        return fromBean(PublicationDao.class);
+    }
+
+    public static PublicationDao fromPublication(Publication publication) {
+        return new PublicationDao(publication.identifier(), publication.user(), publication.institution());
+    }
+
+    public Publication toPublication() {
+        return new Publication(getIdentifier(),
+                               new User(getUserIdentifier(), new Institution(getInstitutionIdentifier())),
+                               new Institution(getInstitutionIdentifier()));
     }
 
     public UUID getUserIdentifier() {
@@ -52,7 +65,7 @@ public class Publication extends Dao {
     @DynamoDbSecondaryPartitionKey(indexNames = {GSI2})
     @DynamoDbAttribute(PK2)
     public String getPk2() {
-        return KEY_PATTERN.formatted(User.type(), this.userIdentifier);
+        return KEY_PATTERN.formatted(UserDao.type(), this.userIdentifier);
     }
 
     public void setPk2(String pk2) {
@@ -62,7 +75,7 @@ public class Publication extends Dao {
     @DynamoDbSecondarySortKey(indexNames = {GSI2})
     @DynamoDbAttribute(SK2)
     public String getSk2() {
-        return KEY_PATTERN.formatted(Publication.type(), getIdentifier());
+        return KEY_PATTERN.formatted(PublicationDao.type(), getIdentifier());
     }
 
     public void setSk2(String sk2) {
@@ -72,7 +85,7 @@ public class Publication extends Dao {
     @DynamoDbSecondaryPartitionKey(indexNames = {GSI3})
     @DynamoDbAttribute(PK3)
     public String getPk3() {
-        return KEY_PATTERN.formatted(Institution.type(), this.institutionIdentifier);
+        return KEY_PATTERN.formatted(InstitutionDao.type(), this.institutionIdentifier);
     }
 
     public void setPk3(String pk3) {
@@ -82,7 +95,7 @@ public class Publication extends Dao {
     @DynamoDbSecondarySortKey(indexNames = {GSI3})
     @DynamoDbAttribute(SK3)
     public String getSk3() {
-        return KEY_PATTERN.formatted(Publication.type(), getIdentifier());
+        return KEY_PATTERN.formatted(PublicationDao.type(), getIdentifier());
     }
 
     public void setSk3(String sk3) {
@@ -106,7 +119,7 @@ public class Publication extends Dao {
     @Generated
     @Override
     public boolean equals(Object o) {
-        if (!(o instanceof Publication that)) {
+        if (!(o instanceof PublicationDao that)) {
             return false;
         }
         if (!super.equals(o)) {
