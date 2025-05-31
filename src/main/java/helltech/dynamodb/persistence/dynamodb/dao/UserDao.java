@@ -1,4 +1,4 @@
-package helltech.dynamodb.persistence.dao;
+package helltech.dynamodb.persistence.dynamodb.dao;
 
 import static helltech.dynamodb.persistence.dynamodb.DynamoDbConstants.GSI2;
 import static helltech.dynamodb.persistence.dynamodb.DynamoDbConstants.PK2;

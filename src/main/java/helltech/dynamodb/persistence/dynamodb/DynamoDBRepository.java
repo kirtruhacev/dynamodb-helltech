@@ -1,17 +1,18 @@
-package helltech.dynamodb.persistence;
+package helltech.dynamodb.persistence.dynamodb;
 
-import static helltech.dynamodb.persistence.DynamoDbConstants.GSI1;
-import static helltech.dynamodb.persistence.DynamoDbConstants.GSI2;
-import static helltech.dynamodb.persistence.DynamoDbConstants.GSI3;
-import static helltech.dynamodb.persistence.DynamoDbConstants.TABLE_NAME;
+import static helltech.dynamodb.persistence.dynamodb.DynamoDbConstants.GSI1;
+import static helltech.dynamodb.persistence.dynamodb.DynamoDbConstants.GSI2;
+import static helltech.dynamodb.persistence.dynamodb.DynamoDbConstants.GSI3;
+import static helltech.dynamodb.persistence.dynamodb.DynamoDbConstants.TABLE_NAME;
 import helltech.dynamodb.model.Entity;
 import helltech.dynamodb.model.Institution;
 import helltech.dynamodb.model.Publication;
 import helltech.dynamodb.model.User;
-import helltech.dynamodb.persistence.dao.Dao;
-import helltech.dynamodb.persistence.dao.InstitutionDao;
-import helltech.dynamodb.persistence.dao.PublicationDao;
-import helltech.dynamodb.persistence.dao.UserDao;
+import helltech.dynamodb.persistence.Repository;
+import helltech.dynamodb.persistence.dynamodb.dao.Dao;
+import helltech.dynamodb.persistence.dynamodb.dao.InstitutionDao;
+import helltech.dynamodb.persistence.dynamodb.dao.PublicationDao;
+import helltech.dynamodb.persistence.dynamodb.dao.UserDao;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;

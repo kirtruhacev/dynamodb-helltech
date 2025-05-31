@@ -1,4 +1,4 @@
-package helltech.dynamodb.persistence.dao;
+package helltech.dynamodb.persistence.dynamodb.dao;
 
 import static software.amazon.awssdk.enhanced.dynamodb.TableSchema.fromBean;
 import helltech.dynamodb.model.Institution;

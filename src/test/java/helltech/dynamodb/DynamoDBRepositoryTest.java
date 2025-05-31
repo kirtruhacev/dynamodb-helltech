@@ -5,10 +5,13 @@ import static java.util.UUID.randomUUID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import com.amazonaws.services.dynamodbv2.local.embedded.DynamoDBEmbedded;
 import com.amazonaws.services.dynamodbv2.local.shared.access.AmazonDynamoDBLocal;
-import helltech.dynamodb.model.business.Entity;
-import helltech.dynamodb.model.business.Institution;
-import helltech.dynamodb.model.business.Publication;
-import helltech.dynamodb.model.business.User;
+import helltech.dynamodb.model.Entity;
+import helltech.dynamodb.model.Institution;
+import helltech.dynamodb.model.Publication;
+import helltech.dynamodb.model.User;
+import helltech.dynamodb.persistence.dynamodb.DynamoDbConstants;
+import helltech.dynamodb.persistence.dynamodb.DynamoDBRepository;
+import helltech.dynamodb.persistence.Repository;
 import java.util.function.Supplier;
 import java.util.stream.IntStream;
 import org.junit.jupiter.api.AfterEach;
@@ -19,7 +22,7 @@ import software.amazon.awssdk.services.dynamodb.model.DeleteTableRequest;
 
 class DynamoDBRepositoryTest {
 
-    private static final String MY_TABLE = DatabaseConstants.TABLE_NAME;
+    private static final String MY_TABLE = DynamoDbConstants.TABLE_NAME;
     public static final AmazonDynamoDBLocal database = DynamoDBEmbedded.create();
     private DynamoDbClient client;
     private Repository repository;
