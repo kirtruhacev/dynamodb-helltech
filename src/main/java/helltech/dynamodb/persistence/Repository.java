@@ -1,9 +1,9 @@
-package helltech.dynamodb;
+package helltech.dynamodb.persistence;
 
-import helltech.dynamodb.model.business.Entity;
-import helltech.dynamodb.model.business.Institution;
-import helltech.dynamodb.model.business.Publication;
-import helltech.dynamodb.model.business.User;
+import helltech.dynamodb.model.Entity;
+import helltech.dynamodb.model.Institution;
+import helltech.dynamodb.model.Publication;
+import helltech.dynamodb.model.User;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;

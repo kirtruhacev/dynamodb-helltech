@@ -1,8 +1,8 @@
-package helltech.dynamodb.model.dao;
+package helltech.dynamodb.persistence.dynamodb.dao;
 
-import static helltech.dynamodb.DatabaseConstants.GSI1;
-import static helltech.dynamodb.DatabaseConstants.PK1;
-import static helltech.dynamodb.DatabaseConstants.SK0;
+import static helltech.dynamodb.persistence.dynamodb.DynamoDbConstants.GSI1;
+import static helltech.dynamodb.persistence.dynamodb.DynamoDbConstants.PK1;
+import static helltech.dynamodb.persistence.dynamodb.DynamoDbConstants.SK0;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import helltech.dynamodb.annotations.Generated;
 import java.io.Serializable;

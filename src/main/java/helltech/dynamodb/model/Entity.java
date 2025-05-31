@@ -1,4 +1,4 @@
-package helltech.dynamodb.model.business;
+package helltech.dynamodb.model;
 
 import java.util.UUID;
 
