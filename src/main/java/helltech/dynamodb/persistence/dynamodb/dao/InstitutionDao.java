@@ -1,7 +1,7 @@
-package helltech.dynamodb.model.dao;
+package helltech.dynamodb.persistence.dynamodb.dao;
 
 import static software.amazon.awssdk.enhanced.dynamodb.TableSchema.fromBean;
-import helltech.dynamodb.model.business.Institution;
+import helltech.dynamodb.model.Institution;
 import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
 

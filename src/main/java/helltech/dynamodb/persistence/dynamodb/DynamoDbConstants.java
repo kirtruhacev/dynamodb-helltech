@@ -1,11 +1,11 @@
-package helltech.dynamodb;
+package helltech.dynamodb.persistence.dynamodb;
 
 /**
  * Constants used in the creation of the database and its keys. Note that SK1 is not used.
  */
-public final class DatabaseConstants {
+public final class DynamoDbConstants {
 
-    private DatabaseConstants() {
+    private DynamoDbConstants() {
         // NO-OP. Should not be initialized.
     }
 

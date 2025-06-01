@@ -1,15 +1,15 @@
 package helltech.dynamodb;
 
-import static helltech.dynamodb.DatabaseConstants.GSI1;
-import static helltech.dynamodb.DatabaseConstants.GSI2;
-import static helltech.dynamodb.DatabaseConstants.GSI3;
-import static helltech.dynamodb.DatabaseConstants.PK0;
-import static helltech.dynamodb.DatabaseConstants.PK1;
-import static helltech.dynamodb.DatabaseConstants.PK2;
-import static helltech.dynamodb.DatabaseConstants.PK3;
-import static helltech.dynamodb.DatabaseConstants.SK0;
-import static helltech.dynamodb.DatabaseConstants.SK2;
-import static helltech.dynamodb.DatabaseConstants.SK3;
+import static helltech.dynamodb.persistence.dynamodb.DynamoDbConstants.GSI1;
+import static helltech.dynamodb.persistence.dynamodb.DynamoDbConstants.GSI2;
+import static helltech.dynamodb.persistence.dynamodb.DynamoDbConstants.GSI3;
+import static helltech.dynamodb.persistence.dynamodb.DynamoDbConstants.PK0;
+import static helltech.dynamodb.persistence.dynamodb.DynamoDbConstants.PK1;
+import static helltech.dynamodb.persistence.dynamodb.DynamoDbConstants.PK2;
+import static helltech.dynamodb.persistence.dynamodb.DynamoDbConstants.PK3;
+import static helltech.dynamodb.persistence.dynamodb.DynamoDbConstants.SK0;
+import static helltech.dynamodb.persistence.dynamodb.DynamoDbConstants.SK2;
+import static helltech.dynamodb.persistence.dynamodb.DynamoDbConstants.SK3;
 import static java.util.Objects.isNull;
 import com.amazonaws.services.dynamodbv2.local.shared.access.AmazonDynamoDBLocal;
 import java.util.ArrayList;

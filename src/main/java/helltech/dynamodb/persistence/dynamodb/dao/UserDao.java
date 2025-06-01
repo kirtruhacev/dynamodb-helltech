@@ -1,12 +1,12 @@
-package helltech.dynamodb.model.dao;
+package helltech.dynamodb.persistence.dynamodb.dao;
 
-import static helltech.dynamodb.DatabaseConstants.GSI2;
-import static helltech.dynamodb.DatabaseConstants.PK2;
-import static helltech.dynamodb.DatabaseConstants.SK2;
+import static helltech.dynamodb.persistence.dynamodb.DynamoDbConstants.GSI2;
+import static helltech.dynamodb.persistence.dynamodb.DynamoDbConstants.PK2;
+import static helltech.dynamodb.persistence.dynamodb.DynamoDbConstants.SK2;
 import static software.amazon.awssdk.enhanced.dynamodb.TableSchema.fromBean;
 import helltech.dynamodb.annotations.Generated;
-import helltech.dynamodb.model.business.Institution;
-import helltech.dynamodb.model.business.User;
+import helltech.dynamodb.model.Institution;
+import helltech.dynamodb.model.User;
 import java.util.Objects;
 import java.util.UUID;
 import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
