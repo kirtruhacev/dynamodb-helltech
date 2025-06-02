@@ -16,6 +16,10 @@ import java.util.function.Function;
 
 public class RdbmsRepository implements Repository {
 
+    public static final String INSTITUTION_ID_VAR = "institution_id";
+    public static final String ID_VAR = "id";
+    public static final String USER_ID_VAR = "user_id";
+    public static final String USER_INSTITUTION_ID_VAR = "user_institution_id";
     private final RdbmsDataSource dataSource;
 
     public RdbmsRepository(RdbmsDataSource dataSource) {
@@ -41,21 +45,19 @@ public class RdbmsRepository implements Repository {
     }
 
     private void saveUser(User user) {
-        var sql = """
-            INSERT INTO "USER" (id, institution_id) VALUES (?, ?)""";
+        var sql = "INSERT INTO \"USER\" (id, institution_id) VALUES (?, ?)";
         try (var connection = dataSource.getDataSource().getConnection();
             var preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.setString(1, user.identifier().toString());
             preparedStatement.setString(2, user.institution().identifier().toString());
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new IllegalStateException(e);
         }
     }
 
     private void savePublication(Publication publication) {
-        var sql = """
-            INSERT INTO "PUBLICATION" (id, user_id, institution_id) VALUES (?, ?, ?)""";
+        var sql = "INSERT INTO \"PUBLICATION\" (id, user_id, institution_id) VALUES (?, ?, ?)";
 
         try (var connection = dataSource.getDataSource().getConnection();
             var preparedStatement = connection.prepareStatement(sql)) {
@@ -64,19 +66,18 @@ public class RdbmsRepository implements Repository {
             preparedStatement.setString(3, publication.institution().identifier().toString());
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new IllegalStateException(e);
         }
     }
 
     private void saveInstitution(Institution institution) {
-        var sql = """
-            INSERT INTO "INSTITUTION" (id) VALUES (?)""";
+        var sql = "INSERT INTO \"INSTITUTION\" (id) VALUES (?)";
         try (var connection = dataSource.getDataSource().getConnection();
             var preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.setString(1, institution.identifier().toString());
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new IllegalStateException(e);
         }
     }
 
@@ -104,32 +105,30 @@ public class RdbmsRepository implements Repository {
             var resultSet = preparedStatement.executeQuery();
             var results = new ArrayList<User>();
             while (resultSet.next()) {
-                var id = UUID.fromString(resultSet.getString("id"));
-                var institutionId = UUID.fromString(resultSet.getString("institution_id"));
+                var id = UUID.fromString(resultSet.getString(ID_VAR));
+                var institutionId = UUID.fromString(resultSet.getString(INSTITUTION_ID_VAR));
                 results.add(new User(id, new Institution(institutionId)));
             }
             return results.isEmpty() ? Collections.emptyList() : results;
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new IllegalStateException(e);
         }
     }
 
     @Override
     public List<Institution> listAllInstitutions() {
-        var sql = """
-            SELECT id FROM "INSTITUTION";
-            """;
+        var sql = "SELECT id FROM \"INSTITUTION\"";
         try (var connection = dataSource.getDataSource().getConnection();
             var preparedStatement = connection.prepareStatement(sql)) {
             var resultSet = preparedStatement.executeQuery();
             var results = new ArrayList<Institution>();
             while (resultSet.next()) {
-                var id = UUID.fromString(resultSet.getString("id"));
+                var id = UUID.fromString(resultSet.getString(ID_VAR));
                 results.add(new Institution(id));
             }
             return results.isEmpty() ? Collections.emptyList() : results;
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new IllegalStateException(e);
         }
     }
 
@@ -146,16 +145,16 @@ public class RdbmsRepository implements Repository {
             var resultSet = preparedStatement.executeQuery();
             var results = new ArrayList<Publication>();
             while (resultSet.next()) {
-                var id = UUID.fromString(resultSet.getString("id"));
-                var userId = UUID.fromString(resultSet.getString("user_id"));
-                var userInstitutionId = UUID.fromString(resultSet.getString("user_institution_id"));
-                var institutionId = UUID.fromString(resultSet.getString("institution_id"));
+                var id = UUID.fromString(resultSet.getString(ID_VAR));
+                var userId = UUID.fromString(resultSet.getString(USER_ID_VAR));
+                var userInstitutionId = UUID.fromString(resultSet.getString(USER_INSTITUTION_ID_VAR));
+                var institutionId = UUID.fromString(resultSet.getString(INSTITUTION_ID_VAR));
                 results.add(new Publication(id, new User(userId, new Institution(userInstitutionId)),
                                             new Institution(institutionId)));
             }
             return results.isEmpty() ? Collections.emptyList() : results;
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new IllegalStateException(e);
         }
     }
 
@@ -174,16 +173,16 @@ public class RdbmsRepository implements Repository {
             var resultSet = preparedStatement.executeQuery();
             var results = new ArrayList<Publication>();
             while (resultSet.next()) {
-                var id = UUID.fromString(resultSet.getString("id"));
-                var userId = UUID.fromString(resultSet.getString("user_id"));
-                var userInstitutionId = UUID.fromString(resultSet.getString("user_institution_id"));
-                var institutionId = UUID.fromString(resultSet.getString("institution_id"));
+                var id = UUID.fromString(resultSet.getString(ID_VAR));
+                var userId = UUID.fromString(resultSet.getString(USER_ID_VAR));
+                var userInstitutionId = UUID.fromString(resultSet.getString(USER_INSTITUTION_ID_VAR));
+                var institutionId = UUID.fromString(resultSet.getString(INSTITUTION_ID_VAR));
                 results.add(new Publication(id, new User(userId, new Institution(userInstitutionId)),
                                             new Institution(institutionId)));
             }
             return results.isEmpty() ? Collections.emptyList() : results;
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new IllegalStateException(e);
         }
     }
 
@@ -202,16 +201,16 @@ public class RdbmsRepository implements Repository {
             var resultSet = preparedStatement.executeQuery();
             var results = new ArrayList<Publication>();
             while (resultSet.next()) {
-                var id = UUID.fromString(resultSet.getString("id"));
-                var userId = UUID.fromString(resultSet.getString("user_id"));
-                var userInstitutionId = UUID.fromString(resultSet.getString("user_institution_id"));
-                var institutionId = UUID.fromString(resultSet.getString("institution_id"));
+                var id = UUID.fromString(resultSet.getString(ID_VAR));
+                var userId = UUID.fromString(resultSet.getString(USER_ID_VAR));
+                var userInstitutionId = UUID.fromString(resultSet.getString(USER_INSTITUTION_ID_VAR));
+                var institutionId = UUID.fromString(resultSet.getString(INSTITUTION_ID_VAR));
                 results.add(new Publication(id, new User(userId, new Institution(userInstitutionId)),
                                             new Institution(institutionId)));
             }
             return results.isEmpty() ? Collections.emptyList() : results;
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new IllegalStateException(e);
         }
     }
 
@@ -229,13 +228,13 @@ public class RdbmsRepository implements Repository {
             var resultSet = preparedStatement.executeQuery();
             var results = new ArrayList<User>();
             while (resultSet.next()) {
-                var id = UUID.fromString(resultSet.getString("id"));
-                var institutionId = UUID.fromString(resultSet.getString("institution_id"));
+                var id = UUID.fromString(resultSet.getString(ID_VAR));
+                var institutionId = UUID.fromString(resultSet.getString(INSTITUTION_ID_VAR));
                 results.add(new User(id, new Institution(institutionId)));
             }
             return results.isEmpty() ? Collections.emptyList() : results;
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new IllegalStateException(e);
         }
     }
 
@@ -254,20 +253,19 @@ public class RdbmsRepository implements Repository {
             var results = new ArrayList<User>();
             try {
                 while (resultSet.next()) {
-                    var id = resultSet.getString("id");
-                    var institution = resultSet.getString("institution_id");
+                    var id = resultSet.getString(ID_VAR);
+                    var institution = resultSet.getString(INSTITUTION_ID_VAR);
                     results.add(new User(UUID.fromString(id), new Institution(UUID.fromString(institution))));
                 }
             } catch (SQLException e) {
-                throw new RuntimeException(e);
+                throw new IllegalStateException(e);
             }
             return results;
         };
     }
 
     private Optional<Institution> queryInstitution(UUID identifier) {
-        var sql = """
-            SELECT * FROM "INSTITUTION" WHERE id = ?""";
+        var sql = "SELECT * FROM \"INSTITUTION\" WHERE id = ?";
         return queryByIdentifier(identifier, sql, extractInstitutionByIdentifierResult());
     }
 
@@ -276,11 +274,11 @@ public class RdbmsRepository implements Repository {
             var results = new ArrayList<Institution>();
             try {
                 while (resultSet.next()) {
-                    var id = resultSet.getString("id");
+                    var id = resultSet.getString(ID_VAR);
                     results.add(new Institution(UUID.fromString(id)));
                 }
             } catch (SQLException e) {
-                throw new RuntimeException(e);
+                throw new IllegalStateException(e);
             }
             return results;
         };
@@ -301,15 +299,15 @@ public class RdbmsRepository implements Repository {
             var results = new ArrayList<Publication>();
             try {
                 while (resultSet.next()) {
-                    var id = resultSet.getString("id");
-                    var institutionId = resultSet.getString("institution_id");
-                    var userId = resultSet.getString("user_id");
+                    var id = resultSet.getString(ID_VAR);
+                    var institutionId = resultSet.getString(INSTITUTION_ID_VAR);
+                    var userId = resultSet.getString(USER_ID_VAR);
                     var institution = new Institution(UUID.fromString(institutionId));
                     var user = new User(UUID.fromString(userId), institution);
                     results.add(new Publication(UUID.fromString(id), user, institution));
                 }
             } catch (SQLException e) {
-                throw new RuntimeException(e);
+                throw new IllegalStateException(e);
             }
             return results;
         };
@@ -323,7 +321,7 @@ public class RdbmsRepository implements Repository {
             var results = function.apply(resultSet);
             return results.isEmpty() ? Optional.empty() : Optional.of(results.getFirst());
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new IllegalStateException(e);
         }
     }
 }
