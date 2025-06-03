@@ -11,7 +11,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "PUBLICATIONS")
-public class PublicationDao {
+public class PublicationDao implements Dao<Publication> {
 
     @Id
     @Column(name = "id")
@@ -39,10 +39,12 @@ public class PublicationDao {
                                   InstitutionDao.fromEntity(publication.institution()));
     }
 
+    @Override
     public UUID getId() {
         return id;
     }
 
+    @Override
     public void setId(UUID id) {
         this.id = id;
     }
@@ -63,7 +65,8 @@ public class PublicationDao {
         this.institution = institution;
     }
 
-    public Publication toPublication() {
-        return new Publication(id, user.toUser(), institution.toInstitution());
+    @Override
+    public Publication toEntity() {
+        return new Publication(id, user.toEntity(), institution.toEntity());
     }
 }

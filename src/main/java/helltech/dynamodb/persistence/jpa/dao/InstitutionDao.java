@@ -9,7 +9,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "INSTITUTIONS")
-public class InstitutionDao {
+public class InstitutionDao implements Dao<Institution> {
 
     @Id
     @Column(name = "id")
@@ -27,15 +27,18 @@ public class InstitutionDao {
         return new InstitutionDao(institution.identifier());
     }
 
+    @Override
     public UUID getId() {
         return id;
     }
 
+    @Override
     public void setId(UUID id) {
         this.id = id;
     }
 
-    public Institution toInstitution() {
+    @Override
+    public Institution toEntity() {
         return new Institution(id);
     }
 }
