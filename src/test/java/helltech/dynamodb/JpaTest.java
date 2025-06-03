@@ -1,41 +1,53 @@
 package helltech.dynamodb;
 
-import static helltech.dynamodb.DynamoDBLocal.dynamoDBLocal;
 import static java.util.UUID.randomUUID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import com.amazonaws.services.dynamodbv2.local.embedded.DynamoDBEmbedded;
-import com.amazonaws.services.dynamodbv2.local.shared.access.AmazonDynamoDBLocal;
 import helltech.dynamodb.model.Entity;
 import helltech.dynamodb.model.Institution;
 import helltech.dynamodb.model.Publication;
 import helltech.dynamodb.model.User;
-import helltech.dynamodb.persistence.dynamodb.DynamoDbConstants;
-import helltech.dynamodb.persistence.dynamodb.DynamoDBRepository;
-import helltech.dynamodb.persistence.Repository;
+import helltech.dynamodb.persistence.jpa.JpaRepository;
 import java.util.function.Supplier;
 import java.util.stream.IntStream;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
-import software.amazon.awssdk.services.dynamodb.model.DeleteTableRequest;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.Persistence;
 
-class DynamoDBRepositoryTest {
+import java.util.UUID;
 
-    private static final String MY_TABLE = DynamoDbConstants.TABLE_NAME;
-    public static final AmazonDynamoDBLocal database = DynamoDBEmbedded.create();
-    private DynamoDbClient client;
-    private Repository repository;
+public class JpaTest {
+
+
+
+
+    private static EntityManagerFactory emf;
+    private EntityManager em;
+    private JpaRepository repository;
+
+    @BeforeAll
+    static void init() {
+        // Initialize EntityManagerFactory once for all tests
+        emf = Persistence.createEntityManagerFactory("examplePU");
+    }
 
     @BeforeEach
     void setUp() {
-        client = dynamoDBLocal(database, MY_TABLE);
-        repository = new DynamoDBRepository(client);
+        // Initialize EntityManager and Repository before each test
+        em = emf.createEntityManager();
+        repository = new JpaRepository();
+
+        // Flush the database to ensure a clean state
+        repository.flush();
     }
 
     @AfterEach
-    void tearDown() {
-        client.deleteTable(DeleteTableRequest.builder().tableName(MY_TABLE).build());
+    public void tearDown() {
+        // Close EntityManager after each test
+        em.close();
     }
 
     @Test

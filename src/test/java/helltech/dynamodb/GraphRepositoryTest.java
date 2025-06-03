@@ -1,41 +1,30 @@
 package helltech.dynamodb;
 
-import static helltech.dynamodb.DynamoDBLocal.dynamoDBLocal;
 import static java.util.UUID.randomUUID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import com.amazonaws.services.dynamodbv2.local.embedded.DynamoDBEmbedded;
-import com.amazonaws.services.dynamodbv2.local.shared.access.AmazonDynamoDBLocal;
 import helltech.dynamodb.model.Entity;
 import helltech.dynamodb.model.Institution;
 import helltech.dynamodb.model.Publication;
 import helltech.dynamodb.model.User;
-import helltech.dynamodb.persistence.dynamodb.DynamoDbConstants;
-import helltech.dynamodb.persistence.dynamodb.DynamoDBRepository;
-import helltech.dynamodb.persistence.Repository;
+import helltech.dynamodb.persistence.graphdb.GraphDatabase;
+import helltech.dynamodb.persistence.graphdb.GraphRepository;
+import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.IntStream;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
-import software.amazon.awssdk.services.dynamodb.model.DeleteTableRequest;
 
-class DynamoDBRepositoryTest {
+public class GraphRepositoryTest {
 
-    private static final String MY_TABLE = DynamoDbConstants.TABLE_NAME;
-    public static final AmazonDynamoDBLocal database = DynamoDBEmbedded.create();
-    private DynamoDbClient client;
-    private Repository repository;
-
-    @BeforeEach
-    void setUp() {
-        client = dynamoDBLocal(database, MY_TABLE);
-        repository = new DynamoDBRepository(client);
-    }
+    private static final Model DEFAULT_MODEL = ModelFactory.createDefaultModel();
+    private final GraphDatabase graphDatabase = new GraphDatabase(DEFAULT_MODEL);
+    private final GraphRepository repository = new GraphRepository(graphDatabase);
 
     @AfterEach
-    void tearDown() {
-        client.deleteTable(DeleteTableRequest.builder().tableName(MY_TABLE).build());
+    void cleanup() {
+        DEFAULT_MODEL.removeAll();
     }
 
     @Test
@@ -54,7 +43,7 @@ class DynamoDBRepositoryTest {
 
     @Test
     void shouldFetchPublicationByIdentifier() {
-        var publication = createPublicationWithUniqueUserAtUniqueOrganisation();
+        var publication = createPublication();
         var persistedPublication = repository.fetchPublicationByIdentifier(publication.identifier()).orElseThrow();
         assertEquals(publication, persistedPublication);
     }
@@ -108,6 +97,24 @@ class DynamoDBRepositoryTest {
         assertEquals(numberOfUsers, users.size());
     }
 
+    private Institution createInstitutionWithUsers(int numberOfUsers) {
+        var institution = createInstitution();
+        daoCreator(numberOfUsers, () -> createUser(institution));
+        return institution;
+    }
+
+    private Institution createInstitutionWithPublications(int publications) {
+        var institution = createInstitution();
+        daoCreator(publications, () -> createPublication(createUser(institution), institution));
+        return institution;
+    }
+
+    private User createUserWithPublications(int publications) {
+        var user = createUser();
+        daoCreator(publications, () -> createPublication(user, createInstitution()));
+        return user;
+    }
+
     private Entity createPublicationWithUniqueUserAtUniqueOrganisation() {
         var institution = createInstitution();
         return createPublication(createUser(institution), institution);
@@ -119,50 +126,34 @@ class DynamoDBRepositoryTest {
         return publication;
     }
 
-    private Institution createInstitutionWithUsers(int numberOfUsers) {
-        var institution = createInstitution();
-        daoCreator(numberOfUsers, () -> createUser(institution));
-        return institution;
+    private void daoCreator(int num, Supplier<Entity> supplier) {
+        IntStream.range(0, num)
+            .forEach(ignored -> supplier.get());
     }
 
-    private User createUserWithPublications(int publications) {
-        var user = createUser();
-        daoCreator(publications, () -> createPublication(user, createInstitution()));
-        return user;
-    }
-
-    private Institution createInstitutionWithPublications(int publications) {
+    private Publication createPublication() {
         var institution = createInstitution();
-        daoCreator(publications, () -> createPublication(createUser(institution), institution));
-        return institution;
+        var user = createUser(institution);
+        var publication = new Publication(UUID.randomUUID(), user, institution);
+        repository.save(publication);
+        return publication;
     }
 
     private Institution createInstitution() {
-        var institution = new Institution(randomUUID());
+        var institution = new Institution(UUID.randomUUID());
         repository.save(institution);
         return institution;
     }
 
     private User createUser() {
-        return createUser(createInstitution());
-    }
-
-    private User createUser(Institution institution) {
-        var user = randomUser(institution);
+        var user = new User(UUID.randomUUID(), new Institution(UUID.randomUUID()));
         repository.save(user);
         return user;
     }
 
-    private Institution randomInstitution() {
-        return new Institution(randomUUID());
-    }
-
-    private static User randomUser(Institution institution) {
-        return new User(randomUUID(), institution);
-    }
-
-    private void daoCreator(int num, Supplier<Entity> supplier) {
-        IntStream.range(0, num)
-            .forEach(ignored -> supplier.get());
+    private User createUser(Institution institution) {
+        var user = new User(UUID.randomUUID(), institution);
+        repository.save(user);
+        return user;
     }
 }
