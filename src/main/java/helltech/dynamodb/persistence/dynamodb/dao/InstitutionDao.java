@@ -8,7 +8,7 @@ import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
 @DynamoDbBean
 public class InstitutionDao extends Dao {
 
-    protected static final String TYPE = "Institution";
+    protected static final String TYPE = "InstitutionDao";
 
     public InstitutionDao() {
     }

@@ -16,11 +16,15 @@ dependencies {
     implementation 'com.fasterxml.jackson.core:jackson-annotations:2.19.0'
     implementation group: 'org.apache.jena', name: 'jena-arq', version: '5.4.0'
     implementation group: 'org.apache.jena', name: 'jena-core', version: '5.4.0'
+    implementation group: 'jakarta.persistence', name: 'jakarta.persistence-api', version: '3.2.0'
+    implementation group: 'org.hibernate.orm', name: 'hibernate-core', version: '7.0.0.Final'
 
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'com.amazonaws:DynamoDBLocal:2.6.0'
     testImplementation 'org.junit.jupiter:junit-jupiter'
+    testImplementation group: 'com.h2database', name: 'h2', version: '2.3.232'
+
 }
 
 test {
