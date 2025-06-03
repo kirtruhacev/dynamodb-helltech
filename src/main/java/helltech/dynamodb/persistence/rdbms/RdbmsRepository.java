@@ -5,6 +5,7 @@ import helltech.dynamodb.model.Institution;
 import helltech.dynamodb.model.Publication;
 import helltech.dynamodb.model.User;
 import helltech.dynamodb.persistence.Repository;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -44,43 +45,7 @@ public class RdbmsRepository implements Repository {
         dataSource.closeDataSource();
     }
 
-    private void saveUser(User user) {
-        var sql = "INSERT INTO \"USER\" (id, institution_id) VALUES (?, ?)";
-        try (var connection = dataSource.getDataSource().getConnection();
-            var preparedStatement = connection.prepareStatement(sql)) {
-            preparedStatement.setString(1, user.identifier().toString());
-            preparedStatement.setString(2, user.institution().identifier().toString());
-            preparedStatement.executeUpdate();
-        } catch (SQLException e) {
-            throw new IllegalStateException(e);
-        }
-    }
-
-    private void savePublication(Publication publication) {
-        var sql = "INSERT INTO \"PUBLICATION\" (id, user_id, institution_id) VALUES (?, ?, ?)";
-
-        try (var connection = dataSource.getDataSource().getConnection();
-            var preparedStatement = connection.prepareStatement(sql)) {
-            preparedStatement.setString(1, publication.identifier().toString());
-            preparedStatement.setString(2, publication.user().identifier().toString());
-            preparedStatement.setString(3, publication.institution().identifier().toString());
-            preparedStatement.executeUpdate();
-        } catch (SQLException e) {
-            throw new IllegalStateException(e);
-        }
-    }
-
-    private void saveInstitution(Institution institution) {
-        var sql = "INSERT INTO \"INSTITUTION\" (id) VALUES (?)";
-        try (var connection = dataSource.getDataSource().getConnection();
-            var preparedStatement = connection.prepareStatement(sql)) {
-            preparedStatement.setString(1, institution.identifier().toString());
-            preparedStatement.executeUpdate();
-        } catch (SQLException e) {
-            throw new IllegalStateException(e);
-        }
-    }
-
+    @Override
     public Optional<User> fetchUserByIdentifier(UUID identifier) {
         return queryUser(identifier);
     }
@@ -97,11 +62,131 @@ public class RdbmsRepository implements Repository {
 
     @Override
     public List<User> listAllUsers() {
+        var sql = "SELECT id, institution_id FROM \"USER\";";
+        return executeSelect(sql, this::selectUsers);
+    }
+
+    @Override
+    public List<Institution> listAllInstitutions() {
+        var sql = "SELECT id FROM \"INSTITUTION\";";
+        return executeSelect(sql, this::selectInstitutions);
+    }
+
+    @Override
+    public List<Publication> listAllPublications() {
         var sql = """
-            SELECT id, institution_id FROM "USER";
-            """;
+            SELECT p.id, \
+                   u.id AS user_id, \
+                   u.institution_id AS user_institution_id,\
+                   p.institution_id FROM "PUBLICATION" p \
+                   INNER JOIN "USER" u ON p.user_id = u.id;""";
+        return executeSelect(sql, this::selectPublications);
+    }
+
+
+    @Override
+    public List<Publication> listPublicationsByUser(User user) {
+
+        var sql = """
+            SELECT p.id, \
+                   u.id AS user_id, \
+                   u.institution_id AS user_institution_id,\
+                   p.institution_id FROM "PUBLICATION" p \
+                   INNER JOIN "USER" u ON p.user_id = u.id WHERE user_id = ?;""";
+        return executeSelect(sql,  preparedStatement -> selectPublicationsByUser(user, preparedStatement));
+    }
+
+    @Override
+    public List<Publication> listPublicationsByInstitution(Institution institution) {
+
+        var sql = """
+            SELECT p.id, \
+                   u.id AS user_id, \
+                   u.institution_id AS user_institution_id,\
+                   p.institution_id FROM "PUBLICATION" p \
+                   INNER JOIN "USER" u ON p.user_id = u.id WHERE p.institution_id = ?;""";
+        return executeSelect(sql, preparedStatement ->  selectPublicationsByInstitution(institution, preparedStatement));
+    }
+
+    @Override
+    public List<User> listAllUsersByInstitution(Institution institution) {
+
+        var sql = """
+            SELECT id, \
+                   institution_id AS institution_id \
+                   FROM "USER" \
+                   WHERE institution_id = ?;""";
+        return executeSelect(sql, preparedStatement -> selectUsersByInstitution(institution, preparedStatement));
+    }
+
+    private void saveUser(User user) {
+        var sql = "INSERT INTO \"USER\" (id, institution_id) VALUES (?, ?);";
+        executeInsert(sql, preparedStatement -> insertUser(user, preparedStatement));
+    }
+
+    private void saveInstitution(Institution institution) {
+        var sql = "INSERT INTO \"INSTITUTION\" (id) VALUES (?);";
+        executeInsert(sql, preparedStatement -> insertInstitution(institution, preparedStatement));
+    }
+
+    private void savePublication(Publication publication) {
+        var sql = "INSERT INTO \"PUBLICATION\" (id, user_id, institution_id) VALUES (?, ?, ?);";
+        executeInsert(sql, preparedStatement -> insertPublication(publication, preparedStatement));
+    }
+
+    private void executeInsert(String sql, Function<PreparedStatement, Void> function) {
         try (var connection = dataSource.getDataSource().getConnection();
             var preparedStatement = connection.prepareStatement(sql)) {
+            function.apply(preparedStatement);
+        } catch (SQLException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    private <T> List<T> executeSelect(String sql, Function<PreparedStatement, List<T>> function) {
+        try (var connection = dataSource.getDataSource().getConnection();
+            var preparedStatement = connection.prepareStatement(sql)) {
+            return function.apply(preparedStatement);
+        } catch (SQLException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    private static Void insertUser(User user, PreparedStatement preparedStatement) {
+        try {
+            preparedStatement.setString(1, user.identifier().toString());
+            preparedStatement.setString(2, user.institution().identifier().toString());
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            throw new IllegalStateException(e);
+        }
+        return null;
+    }
+
+    private Void insertPublication(Publication publication, PreparedStatement preparedStatement) {
+        try {
+            preparedStatement.setString(1, publication.identifier().toString());
+            preparedStatement.setString(2, publication.user().identifier().toString());
+            preparedStatement.setString(3, publication.institution().identifier().toString());
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            throw new IllegalStateException(e);
+        }
+        return null;
+    }
+
+    private Void insertInstitution(Institution institution, PreparedStatement preparedStatement) {
+        try {
+            preparedStatement.setString(1, institution.identifier().toString());
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            throw new IllegalStateException(e);
+        }
+        return null;
+    }
+
+    private List<User> selectUsers(PreparedStatement preparedStatement) {
+        try {
             var resultSet = preparedStatement.executeQuery();
             var results = new ArrayList<User>();
             while (resultSet.next()) {
@@ -115,11 +200,8 @@ public class RdbmsRepository implements Repository {
         }
     }
 
-    @Override
-    public List<Institution> listAllInstitutions() {
-        var sql = "SELECT id FROM \"INSTITUTION\"";
-        try (var connection = dataSource.getDataSource().getConnection();
-            var preparedStatement = connection.prepareStatement(sql)) {
+    private List<Institution> selectInstitutions(PreparedStatement preparedStatement) {
+        try {
             var resultSet = preparedStatement.executeQuery();
             var results = new ArrayList<Institution>();
             while (resultSet.next()) {
@@ -132,16 +214,8 @@ public class RdbmsRepository implements Repository {
         }
     }
 
-    @Override
-    public List<Publication> listAllPublications() {
-        var sql = """
-            SELECT p.id, \
-                   u.id AS user_id, \
-                   u.institution_id AS user_institution_id,\
-                   p.institution_id FROM "PUBLICATION" p \
-                   INNER JOIN "USER" u ON p.user_id = u.id""";
-        try (var connection = dataSource.getDataSource().getConnection();
-            var preparedStatement = connection.prepareStatement(sql)) {
+    private List<Publication> selectPublications(PreparedStatement preparedStatement) {
+        try {
             var resultSet = preparedStatement.executeQuery();
             var results = new ArrayList<Publication>();
             while (resultSet.next()) {
@@ -158,17 +232,8 @@ public class RdbmsRepository implements Repository {
         }
     }
 
-    @Override
-    public List<Publication> listPublicationsByUser(User user) {
-
-        var sql = """
-            SELECT p.id, \
-                   u.id AS user_id, \
-                   u.institution_id AS user_institution_id,\
-                   p.institution_id FROM "PUBLICATION" p \
-                   INNER JOIN "USER" u ON p.user_id = u.id WHERE user_id = ?""";
-        try (var connection = dataSource.getDataSource().getConnection();
-            var preparedStatement = connection.prepareStatement(sql)) {
+    private List<Publication> selectPublicationsByUser(User user, PreparedStatement preparedStatement) {
+        try {
             preparedStatement.setString(1, user.identifier().toString());
             var resultSet = preparedStatement.executeQuery();
             var results = new ArrayList<Publication>();
@@ -186,17 +251,9 @@ public class RdbmsRepository implements Repository {
         }
     }
 
-    @Override
-    public List<Publication> listPublicationsByInstitution(Institution institution) {
-
-        var sql = """
-            SELECT p.id, \
-                   u.id AS user_id, \
-                   u.institution_id AS user_institution_id,\
-                   p.institution_id FROM "PUBLICATION" p \
-                   INNER JOIN "USER" u ON p.user_id = u.id WHERE p.institution_id = ?""";
-        try (var connection = dataSource.getDataSource().getConnection();
-            var preparedStatement = connection.prepareStatement(sql)) {
+    private List<Publication> selectPublicationsByInstitution(Institution institution,
+                                                              PreparedStatement preparedStatement) {
+        try {
             preparedStatement.setString(1, institution.identifier().toString());
             var resultSet = preparedStatement.executeQuery();
             var results = new ArrayList<Publication>();
@@ -214,16 +271,8 @@ public class RdbmsRepository implements Repository {
         }
     }
 
-    @Override
-    public List<User> listAllUsersByInstitution(Institution institution) {
-
-        var sql = """
-            SELECT id, \
-                   institution_id AS institution_id \
-                   FROM "USER" \
-                   WHERE institution_id = ?""";
-        try (var connection = dataSource.getDataSource().getConnection();
-            var preparedStatement = connection.prepareStatement(sql)) {
+    private List<User> selectUsersByInstitution(Institution institution, PreparedStatement preparedStatement) {
+        try {
             preparedStatement.setString(1, institution.identifier().toString());
             var resultSet = preparedStatement.executeQuery();
             var results = new ArrayList<User>();
@@ -243,7 +292,7 @@ public class RdbmsRepository implements Repository {
             SELECT u.id, i.id AS institution_id\
                 FROM "USER" u\
                 INNER JOIN "INSTITUTION" i ON u.institution_id = i.id\
-                WHERE u.id = ?
+                WHERE u.id = ?;
             """;
         return queryByIdentifier(identifier, sql, extractUserByIdentifierResult());
     }
@@ -265,7 +314,7 @@ public class RdbmsRepository implements Repository {
     }
 
     private Optional<Institution> queryInstitution(UUID identifier) {
-        var sql = "SELECT * FROM \"INSTITUTION\" WHERE id = ?";
+        var sql = "SELECT * FROM \"INSTITUTION\" WHERE id = ?;";
         return queryByIdentifier(identifier, sql, extractInstitutionByIdentifierResult());
     }
 
@@ -290,7 +339,7 @@ public class RdbmsRepository implements Repository {
                    u.id AS user_id, \
                    u.id AS user_institution_id,\
                    p.institution_id FROM "PUBLICATION" p \
-                   INNER JOIN "USER" u ON p.user_id = u.id WHERE p.id = ?""";
+                   INNER JOIN "USER" u ON p.user_id = u.id WHERE p.id = ?;""";
         return queryByIdentifier(identifier, sql, extractPublicationByIdentifierResult());
     }
 
