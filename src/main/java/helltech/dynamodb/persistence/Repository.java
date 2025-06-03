@@ -29,10 +29,10 @@ public interface Repository {
     Optional<User> fetchUserByIdentifier(UUID identifier);
 
     /**
-     * Fetch data for an Institution by identifier; the data may be empty if the
-     * identifier is not associated with any known Institution.
-     * @param identifier A UUID that identifies an Institution.
-     * @return return Institution data if found, empty if not found.
+     * Fetch data for an InstitutionDao by identifier; the data may be empty if the
+     * identifier is not associated with any known InstitutionDao.
+     * @param identifier A UUID that identifies an InstitutionDao.
+     * @return return InstitutionDao data if found, empty if not found.
      */
     Optional<Institution> fetchInstitutionByIdentifier(UUID identifier);
 
@@ -70,15 +70,15 @@ public interface Repository {
     List<Publication> listPublicationsByUser(User user);
 
     /**
-     * List Publications associated with an Institution.
-     * @param institution An Institution.
+     * List Publications associated with an InstitutionDao.
+     * @param institution An InstitutionDao.
      * @return A list of Publications.
      */
     List<Publication> listPublicationsByInstitution(Institution institution);
 
     /**
-     * List all Users associated with an Institution.
-     * @param institution An Institution.
+     * List all Users associated with an InstitutionDao.
+     * @param institution An InstitutionDao.
      * @return A list of Users.
      */
     List<User> listAllUsersByInstitution(Institution institution);
